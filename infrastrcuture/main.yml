@@ -1,0 +1,35 @@
+- hosts: lcoalhost
+  gather_facts: no
+  
+  tasks:
+  
+	- name: Create task definition
+	  ecs_taskdefinition:
+		containers:
+		- name: 'technical_challenge_ecs_cluster:_tassk_defination'
+		  cpu: 2
+		  essential: true
+		  image: "technical_challenge:latest"
+		  memory: 2
+		  mountPoints:
+		  - containerPath: /app/log
+			sourceVolume: /var/logs
+		  portMappings:
+		  - containerPort: 80
+			hostPort: 80
+
+	 - name: Start a task
+	   ecs_service:
+		  state: present
+		  name: technical_challenge_ecs_service
+		  cluster: technical_challenge_ecs_cluster
+		  task_definition: 'technical_challenge_ecs_cluster:1'
+		  desired_count: 1
+
+	- name: Wait for register
+	  ecs_cluster:
+		name: technical_challenge_ecs_cluster
+		state: has_instances
+		delay: 10
+		repeat: 10
+	  register: task_output
